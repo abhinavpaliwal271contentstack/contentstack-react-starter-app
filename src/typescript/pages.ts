@@ -61,6 +61,7 @@ export type Post = {
     title: string;
     date:string;
     author:Author[];
+    bio: string;
     body:string;
     related_post:[Blog];
     $:Object;

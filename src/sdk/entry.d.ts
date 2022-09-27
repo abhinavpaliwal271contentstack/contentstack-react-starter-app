@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 import * as contentstack from 'contentstack';
 import * as Utils from '@contentstack/utils';
+import axios from 'axios';
 
 import ContentstackLivePreview from '@contentstack/live-preview-utils';
 
@@ -83,20 +84,21 @@ export default {
    * @param {* Json RTE path} jsonRtePath
    * @returns
    */
-  getEntryByUrl({ contentTypeUid, entryUrl, referenceFieldPath, jsonRtePath }) {
-    return new Promise((resolve, reject) => {
+  async getEntryByUrl({ contentTypeUid, entryUrl, referenceFieldPath, jsonRtePath }) {
+    const data =  new Promise((resolve, reject) => {
       const blogQuery = Stack.ContentType(contentTypeUid).Query();
       if (referenceFieldPath) blogQuery.includeReference(referenceFieldPath);
       blogQuery.includeOwner().toJSON();
       const data = blogQuery.where('url', `${entryUrl}`).find();
       data.then(
-        (result) => {
+        async (result) => {
           jsonRtePath &&
             Utils.jsonToHTML({
               entry: result,
               paths: jsonRtePath,
               renderOption,
             });
+            const data = await result[0]
           resolve(result[0]);
         },
         (error) => {
@@ -104,5 +106,38 @@ export default {
         }
       );
     });
+    const bewData = await data;
+    const finaldata =  await enhanceSDKWithToggles(bewData);
+    console.log(finaldata, "dcdc")
+    return finaldata
   },
 };
+
+const API_URL = 'https://dev-fest.devcontentstackapps.com/featureToggle';
+
+function getFeatureToggles(apiKey: string): Promise<object> {
+  return new Promise((resolve, reject) => {
+    axios
+      .get(`${API_URL}?stack_api_key=${apiKey}`)
+      .then((resp) => {
+        resolve(resp.data);
+      })
+      .catch(reject);
+  });
+}
+
+
+async function enhanceSDKWithToggles(contentstackSDK: any) {
+
+  const author = contentstackSDK[0]?.author?.[0]
+  if (author) {
+    const fetaureToogles = await getFeatureToggles("blt62a4a10a1212b1c6");
+    console.log(fetaureToogles[0]?.enabled, "135")
+    const featureFlag = fetaureToogles[0]?.enabled;
+    if (featureFlag) {
+      console.log("yaha aya kya", contentstackSDK[0]?.author?.[0], fetaureToogles[0])
+      author.bio = author.new_bio
+    }
+  }
+  return contentstackSDK
+}

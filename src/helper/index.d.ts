@@ -60,7 +60,7 @@ export const getBlogPostRes = async (entryUrl) => {
     contentTypeUid: 'blog_post',
     entryUrl,
     referenceFieldPath: ['author', 'related_post'],
-    jsonRtePath: ['body', 'related_post.body'],
+    jsonRtePath: ['body', 'related_post.body', "author.bio"],
   });
   liveEdit && addEditableTags(response[0], 'blog_post', true);
   return response[0];

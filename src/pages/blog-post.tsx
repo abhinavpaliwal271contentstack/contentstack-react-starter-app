@@ -13,7 +13,7 @@ import { Prop, Banner, Post } from "../typescript/pages";
 export default function BlogPost({ entry }: Prop) {
   const { blogId } = useParams();
   const history = useNavigate();
-  const [getEntry, setEntry] = useState({ banner: {} as Banner, post: {} as Post});
+  const [getEntry, setEntry] = useState({ banner: {} as Banner, post: {} as Post });
   const [error, setError] = useState(false);
 
   async function fetchData() {
@@ -44,13 +44,15 @@ export default function BlogPost({ entry }: Prop) {
   }, [getEntry.post, blogId]);
 
   const { post, banner } = getEntry;
+  const childrenabc = (post?.author?.[0] as any)?.bio?.children?.[0]?.children;
+  console.log(post?.author?.[0], "47")
   return (
     <>
       {banner ? (
         <RenderComponents
           pageComponents={banner.page_components}
           blogsPage
-          contentTypeUid='blog_post'
+          contentTypeUid="blog_post"
           entryUid={banner.uid}
           locale={banner.locale}
         />
@@ -58,37 +60,50 @@ export default function BlogPost({ entry }: Prop) {
         <Skeleton height={400} />
       )}
 
-      <div className='blog-container'>
-        <article className='blog-detail'>
+      <div className="blog-container">
+        <article className="blog-detail">
           {post.title ? (
-            <h2 {...post.$?.title as {}}>{post.title}</h2>
+            <h2 {...(post.$?.title as {})}>{post.title}</h2>
           ) : (
             <h2>
               <Skeleton />
             </h2>
           )}
           {post.date ? (
-            <p {...post.$?.date as {}}>
-              {moment(post.date).format('ddd, MMM D YYYY')},{' '}
-              <strong {...post.author[0].$?.title as {}}>
+            <div {...(post.$?.date as {})} style={{backgroundColor: 'aliceblue', padding: '20px', borderRadius: '30px'}}>
+              {moment(post.date).format("ddd, MMM D YYYY")},{" "}
+              <strong {...(post.author[0].$?.title as {})}>
                 {post.author[0].title}
               </strong>
-            </p>
+              <br />
+              {childrenabc && <img src={(post?.author?.[0] as any)?.picture?.url} style={{ borderRadius: '50px', height: '120px' , padding: '5px'}}></img>}
+              <br />
+              <small>
+                {childrenabc
+                  ? childrenabc.map(
+                      (bio: any, i: string) => (<span style={ bio.bold ? { fontWeight:'bold', fontStyle: "italic" } : {}}
+                      key={i}>{bio.text}</span>)
+                    )
+                  : (post.author[0] as any)?.bio}
+              </small>
+              <br />
+              <br />
+            </div>
           ) : (
             <p>
-              <Skeleton width={300}/>
+              <Skeleton width={300} />
             </p>
           )}
           {post.body ? (
-            <div {...post.$?.body as {}}>{parse(post.body)}</div>
+            <div {...(post.$?.body as {})}>{parse(post.body)}</div>
           ) : (
             <Skeleton height={800} width={600} />
           )}
         </article>
-        <div className='blog-column-right'>
-          <div className='related-post'>
+        <div className="blog-column-right">
+          <div className="related-post">
             {Object.keys(banner).length && banner.page_components[2].widget ? (
-              <h2 {...banner?.page_components[2].widget.$?.title_h2 as {}}>
+              <h2 {...(banner?.page_components[2].widget.$?.title_h2 as {})}>
                 {banner?.page_components[2].widget.title_h2}
               </h2>
             ) : (
